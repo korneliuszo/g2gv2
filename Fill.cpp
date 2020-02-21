@@ -11,6 +11,7 @@ using namespace boost::polygon::operators;
 
 std::list<std::vector<point>> Fillone(polygon_with_holes in, int pensize) {
 	std::list<std::vector<point>> ret;
+	std::vector<std::vector<point>> holes_path;
 	polygon_set p;
 	p += in;
 
@@ -41,16 +42,40 @@ std::list<std::vector<point>> Fillone(polygon_with_holes in, int pensize) {
 					ret.push_back(pts);
 				}
 			}
-			for (auto hole = boost::polygon::begin_holes(poly);
-					hole != boost::polygon::end_holes(poly); hole++) {
+			if (holes_path.size() != poly.size_holes())
+			{
+				for (auto hole: holes_path)
+				{
+					if (hole.size())
+					{
+						ret.push_front(hole);
+					}
+				}
+				holes_path.clear();
+				holes_path.resize(poly.size_holes());
+			}
+			for (auto [hole, i ] = std::tuple{boost::polygon::begin_holes(poly), 0};
+					hole != boost::polygon::end_holes(poly); hole++, i++) {
 				std::vector<point> pts_hole;
 				pts_hole.insert(pts_hole.end(), hole->begin(), hole->end());
 				if (hole->size() > 0)
 					pts_hole.push_back(*hole->begin());
-				ret.push_front(pts_hole);
+				if (holes_path[i].size() && boost::polygon::euclidean_distance(
+						pts_hole.front(),
+						holes_path[i].back()) < pensize) {
+					std::vector<point> *last_pts = &holes_path[i];
+					last_pts->insert(last_pts->end(),pts_hole.begin(),pts_hole.end());
+				} else {
+					if (holes_path[i].size())
+						ret.push_front(holes_path[i]);
+					holes_path[i].clear();
+					holes_path[i] = pts_hole;
+				}
+
 			}
 			p.resize(-pensize / 2,true,5);
 		} else {
+			ret.insert(ret.begin(),holes_path.begin(),holes_path.end());
 			for (auto it = polys.begin(); it != polys.end(); it++) {
 				auto b = Fillone(*it, pensize);
 				ret.insert(ret.begin(), b.begin(), b.end());
