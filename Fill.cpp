@@ -49,10 +49,6 @@ std::list<std::vector<point>> Fillone(polygon_with_holes in, int pensize) {
 					pts_hole.push_back(*hole->begin());
 				ret.push_front(pts_hole);
 			}
-			//if (poly.size() < 4)
-			//	break;
-			//polys.resize(1);
-			//p.set(polys.begin(),polys.end());
 			p.resize(-pensize / 2,true,5);
 		} else {
 			for (auto it = polys.begin(); it != polys.end(); it++) {
