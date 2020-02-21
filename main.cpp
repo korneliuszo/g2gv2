@@ -35,7 +35,10 @@ int main(int argc, char **argv) {
 			("outfile,o", po::value<std::string>(), "out gcode")
 			("pngfile,p", po::value<std::string>(), "out png")
 			("delusesfixeddia,D", po::value<double>(&delusesfixeddia), "del uses fixed diameter")
-			("transform,t", po::value<int>(), "boost polygon transform (SWAP_XY=4)");
+			("transform,t", po::value<int>(), "boost polygon transform (SWAP_XY=4)")
+			("x,x", po::value<int>(), "transform X in resolution")
+			("y,y", po::value<int>(), "transform Y in resolution");
+
 
 	po::variables_map vm;
 	po::store(po::parse_command_line(argc, argv, desc), vm);
@@ -67,6 +70,11 @@ int main(int argc, char **argv) {
 			else
 				set -= GerbvFixedDecoder(d,resolution_in_mm,delusesfixeddia);
 		}
+	}
+	if (vm.count("x") && vm.count("y"))
+	{
+		boost::polygon::transformation<scalar> tr(point(vm["x"].as<int>(),vm["y"].as<int>()));
+		boost::polygon::transform(set,tr);
 	}
 	if (vm.count("transform"))
 	{
