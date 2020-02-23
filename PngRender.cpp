@@ -12,7 +12,7 @@ void drawline(png::image<png::rgb_pixel> &image, point a, point b,
 		double scalefactor, scalar minx, scalar miny, int colour) {
 	png::rgb_pixel col((colour>>16)&0xff,(colour>>8)&0xff,(colour>>0)&0xff);
 	if (a== b) {
-		image[image.get_height()-int((a.y() - miny) * scalefactor)]
+		image[image.get_height()-1-int((a.y() - miny) * scalefactor)]
 			  [int((a.x() - minx) * scalefactor)] = col;
 		return;
 	}
@@ -29,7 +29,7 @@ void drawline(png::image<png::rgb_pixel> &image, point a, point b,
 	double y = (a.y() - miny) * scalefactor;
 	int i = 1;
 	while (i <= step || i == 1) {
-		image[image.get_height()-int(y)][int(x)] = col;
+		image[image.get_height()-1-int(y)][int(x)] = col;
 		x = x + dx;
 		y = y + dy;
 		i = i + 1;
