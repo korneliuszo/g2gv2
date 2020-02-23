@@ -37,7 +37,8 @@ int main(int argc, char **argv) {
 			("delusesfixeddia,D", po::value<double>(&delusesfixeddia), "del uses fixed diameter")
 			("transform,t", po::value<int>(), "boost polygon transform (SWAP_XY=4)")
 			("x,x", po::value<int>(), "transform X in resolution")
-			("y,y", po::value<int>(), "transform Y in resolution");
+			("y,y", po::value<int>(), "transform Y in resolution")
+			("xy0", "move gcode to 0");
 
 
 	po::variables_map vm;
@@ -74,6 +75,13 @@ int main(int argc, char **argv) {
 	if (vm.count("x") && vm.count("y"))
 	{
 		boost::polygon::transformation<scalar> tr(point(vm["x"].as<int>(),vm["y"].as<int>()));
+		boost::polygon::transform(set,tr);
+	}
+	if (vm.count("xy0"))
+	{
+		rectangle rect;
+		set.extents(rect);
+		boost::polygon::transformation<scalar> tr(boost::polygon::ll(rect));
 		boost::polygon::transform(set,tr);
 	}
 	if (vm.count("transform"))
