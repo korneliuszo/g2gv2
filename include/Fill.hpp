@@ -11,7 +11,7 @@
 #include "polygons.hpp"
 #include <memory>
 
-std::list<std::vector<point>> Fill(polygon_set in, int pensize);
+std::list<std::vector<point>> Fill(polygon_set in, int pensize, int resize_points);
 
 
 

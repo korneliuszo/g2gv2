@@ -22,6 +22,7 @@ int main(int argc, char **argv) {
 	double delusesfixeddia = -1;
 	double zup=5, zdown=0;
 	int circle_points=50;
+	int resize_points=5;
 
 	namespace po = boost::program_options;
 	po::options_description desc("Options");
@@ -41,6 +42,7 @@ int main(int argc, char **argv) {
 			("y,y", po::value<int>(), "transform Y in resolution")
 			("xy0", "move gcode to 0")
 			("circlepoints,c", po::value<int>(&circle_points), "circle_points")
+			("resizepoints,C", po::value<int>(&resize_points), "resize_points")
 			("hackSize", "hack widths to be more than pensize");
 
 
@@ -105,7 +107,7 @@ int main(int argc, char **argv) {
 	if (vm.count("outfile"))
 	{
 		std::cout << "Tracing path" << std::endl;
-		fill=Fill(set, pensize_scalar);
+		fill=Fill(set, pensize_scalar, resize_points);
 	}
 	if (vm.count("outfile"))
 	{

@@ -9,7 +9,7 @@
 
 using namespace boost::polygon::operators;
 
-std::list<std::vector<point>> Fillone(polygon_with_holes in, int pensize) {
+std::list<std::vector<point>> Fillone(polygon_with_holes in, int pensize, int resize_points) {
 	std::list<std::vector<point>> ret;
 	std::vector<std::vector<point>> holes_path;
 	polygon_set p;
@@ -77,11 +77,11 @@ std::list<std::vector<point>> Fillone(polygon_with_holes in, int pensize) {
 				}
 
 			}
-			p.resize(-pensize / 2,true,5);
+			p.resize(-pensize / 2,true, resize_points);
 		} else {
 			ret.insert(ret.begin(),holes_path.begin(),holes_path.end());
 			for (auto it = polys.begin(); it != polys.end(); it++) {
-				auto b = Fillone(*it, pensize);
+				auto b = Fillone(*it, pensize, resize_points);
 				ret.insert(ret.begin(), b.begin(), b.end());
 			}
 			break;
@@ -90,14 +90,14 @@ std::list<std::vector<point>> Fillone(polygon_with_holes in, int pensize) {
 	return ret;
 }
 
-std::list<std::vector<point>> Fill(polygon_set in, int pensize) {
+std::list<std::vector<point>> Fill(polygon_set in, int pensize, int resize_points) {
 	std::list<std::vector<point>> ret;
 	std::vector<polygon_with_holes> polys;
 	polys.clear();
-	in.resize(-pensize / 2, true,5);
+	in.resize(-pensize / 2, true, resize_points);
 	in.get(polys);
 	for (auto it = polys.begin(); it < polys.end(); it++) {
-		std::list<std::vector<point>> p = Fillone(*it, pensize);
+		std::list<std::vector<point>> p = Fillone(*it, pensize, resize_points);
 		ret.insert(ret.end(), p.begin(), p.end());
 	}
 	return ret;
