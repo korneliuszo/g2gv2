@@ -20,7 +20,10 @@ std::list<std::vector<point>> Fillone(polygon_with_holes in, int pensize) {
 		polys.clear();
 		p.get(polys);
 		if (polys.size() == 0)
+		{
+			ret.insert(ret.begin(),holes_path.begin(),holes_path.end());
 			break;
+		}
 		if (polys.size() == 1) {
 			polygon_with_holes poly = polys.front();
 			if (poly.size() > 0) {
