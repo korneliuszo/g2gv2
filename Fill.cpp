@@ -60,7 +60,8 @@ std::list<std::vector<point>> Fillone(polygon_with_holes in, int pensize) {
 				pts_hole.insert(pts_hole.end(), hole->begin(), hole->end());
 				if (hole->size() > 0)
 					pts_hole.push_back(*hole->begin());
-				if (holes_path[i].size() && boost::polygon::euclidean_distance(
+				if (holes_path[i].size() && pts_hole.size() &&
+						boost::polygon::euclidean_distance(
 						pts_hole.front(),
 						holes_path[i].back()) < pensize) {
 					std::vector<point> *last_pts = &holes_path[i];
