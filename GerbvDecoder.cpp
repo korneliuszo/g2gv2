@@ -156,7 +156,7 @@ polygon_set makeThermal(point center, scalar odia, scalar idia, scalar gap) {
 	return pset;
 }
 
-polygon_set GerbvDecoder(std::string infile, scalar resolution_in_mm) {
+polygon_set GerbvDecoder(std::string infile, scalar resolution_in_mm, scalar minsize) {
 	polygon_set graph;
 	gerbv_project_t *project = gerbv_create_project();
 	double gscale_to_um;
@@ -440,11 +440,13 @@ polygon_set GerbvDecoder(std::string infile, scalar resolution_in_mm) {
 					gsmall += tre;
 					switch (gerber->aperture[currentNet->aperture]->type) {
 					case GERBV_APTYPE_CIRCLE:
+					{
+						scalar width=std::max(scalar(gerber->aperture[currentNet->aperture]->parameter[0]* gscale_to_um),
+								minsize);
 						gsmall +=
-								makeRect(start, stop,
-										gerber->aperture[currentNet->aperture]->parameter[0]
-												* gscale_to_um);
+								makeRect(start, stop, width);
 						break;
+					}
 					default:
 						std::cerr << "Aperture "
 								<< gerber->aperture[currentNet->aperture]->type

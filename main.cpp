@@ -38,7 +38,8 @@ int main(int argc, char **argv) {
 			("transform,t", po::value<int>(), "boost polygon transform (SWAP_XY=4)")
 			("x,x", po::value<int>(), "transform X in resolution")
 			("y,y", po::value<int>(), "transform Y in resolution")
-			("xy0", "move gcode to 0");
+			("xy0", "move gcode to 0")
+			("hackSize", "hack widths to be more than pensize");
 
 
 	po::variables_map vm;
@@ -51,13 +52,14 @@ int main(int argc, char **argv) {
 	}
 
 	polygon_set set;
-
+	scalar pensize_scalar = pensize*resolution_in_mm;
+	scalar minsize = vm.count("hackSize") ? pensize_scalar+2 : -1;
 	if (vm.count("add")) {
 		std::vector<std::string> add = vm["add"].as<std::vector<std::string>>();
 		for(auto a: add)
 		{
 			std::cout << "Reading: " << a << std::endl;
-			set += GerbvDecoder(a,resolution_in_mm);
+			set += GerbvDecoder(a,resolution_in_mm, minsize);
 		}
 	}
 
@@ -67,7 +69,7 @@ int main(int argc, char **argv) {
 		{
 			std::cout << "Reading: " << d << std::endl;
 			if (delusesfixeddia < 0)
-				set -= GerbvDecoder(d,resolution_in_mm);
+				set -= GerbvDecoder(d,resolution_in_mm, minsize);
 			else
 				set -= GerbvFixedDecoder(d,resolution_in_mm,delusesfixeddia);
 		}
@@ -101,7 +103,7 @@ int main(int argc, char **argv) {
 	if (vm.count("outfile"))
 	{
 		std::cout << "Tracing path" << std::endl;
-		fill=Fill(set, pensize*resolution_in_mm);
+		fill=Fill(set, pensize_scalar);
 	}
 	if (vm.count("outfile"))
 	{
