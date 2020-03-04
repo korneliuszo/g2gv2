@@ -15,8 +15,6 @@ extern "C" {
 
 using namespace boost::polygon::operators;
 
-static int circle_points = 50;
-
 template<typename coordinate_type>
 class rotate_transform {
 public:
@@ -131,7 +129,7 @@ polygon_set makeOval(point center, scalar width, scalar height,
 }
 
 polygon_set makeMoire(point center, scalar odia, scalar thickness, scalar gap,
-		int max_rings, scalar cross_thickness, scalar cross_len) {
+		int max_rings, scalar cross_thickness, scalar cross_len, int circle_points) {
 	polygon_set pset;
 	for (int i = 0; i < max_rings; i++) {
 		int external_diameter = odia - 2 * (thickness + gap) * i;
@@ -148,7 +146,7 @@ polygon_set makeMoire(point center, scalar odia, scalar thickness, scalar gap,
 	return pset;
 }
 
-polygon_set makeThermal(point center, scalar odia, scalar idia, scalar gap) {
+polygon_set makeThermal(point center, scalar odia, scalar idia, scalar gap, int circle_points) {
 	polygon_set pset;
 	pset += makePoly(center, odia, circle_points, 0, idia);
 	pset -= makeRect(center, gap, odia, 0, 0);
@@ -156,7 +154,7 @@ polygon_set makeThermal(point center, scalar odia, scalar idia, scalar gap) {
 	return pset;
 }
 
-polygon_set GerbvDecoder(std::string infile, scalar resolution_in_mm, scalar minsize) {
+polygon_set GerbvDecoder(std::string infile, scalar resolution_in_mm, scalar minsize, int circle_points) {
 	polygon_set graph;
 	gerbv_project_t *project = gerbv_create_project();
 	double gscale_to_um;
@@ -304,7 +302,8 @@ polygon_set GerbvDecoder(std::string infile, scalar resolution_in_mm, scalar min
 								simplified_amacro->parameter[4] * gscale_to_um,
 								simplified_amacro->parameter[5],
 								simplified_amacro->parameter[6] * gscale_to_um,
-								simplified_amacro->parameter[7] * gscale_to_um);
+								simplified_amacro->parameter[7] * gscale_to_um,
+								circle_points);
 						polarity = 1;
 						rotation = simplified_amacro->parameter[8];
 						break;
@@ -317,7 +316,8 @@ polygon_set GerbvDecoder(std::string infile, scalar resolution_in_mm, scalar min
 												* gscale_to_um),
 								simplified_amacro->parameter[2] * gscale_to_um,
 								simplified_amacro->parameter[3] * gscale_to_um,
-								simplified_amacro->parameter[4] * gscale_to_um);
+								simplified_amacro->parameter[4] * gscale_to_um,
+								circle_points);
 						polarity = 1;
 						rotation = simplified_amacro->parameter[5];
 						break;
@@ -540,7 +540,7 @@ polygon_set GerbvDecoder(std::string infile, scalar resolution_in_mm, scalar min
 }
 
 polygon_set GerbvFixedDecoder(std::string infile, scalar resolution_in_mm,
-		double fixed_dia) {
+		double fixed_dia, int circle_points) {
 	polygon_set graph;
 	gerbv_project_t *project = gerbv_create_project();
 	double gscale_to_um;

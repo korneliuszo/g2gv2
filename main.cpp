@@ -21,6 +21,7 @@ int main(int argc, char **argv) {
 	double pensize = 0.18;
 	double delusesfixeddia = -1;
 	double zup=5, zdown=0;
+	int circle_points=50;
 
 	namespace po = boost::program_options;
 	po::options_description desc("Options");
@@ -39,6 +40,7 @@ int main(int argc, char **argv) {
 			("x,x", po::value<int>(), "transform X in resolution")
 			("y,y", po::value<int>(), "transform Y in resolution")
 			("xy0", "move gcode to 0")
+			("circlepoints,c", po::value<int>(&circle_points), "circle_points")
 			("hackSize", "hack widths to be more than pensize");
 
 
@@ -59,7 +61,7 @@ int main(int argc, char **argv) {
 		for(auto a: add)
 		{
 			std::cout << "Reading: " << a << std::endl;
-			set += GerbvDecoder(a,resolution_in_mm, minsize);
+			set += GerbvDecoder(a,resolution_in_mm, minsize, circle_points);
 		}
 	}
 
@@ -69,9 +71,9 @@ int main(int argc, char **argv) {
 		{
 			std::cout << "Reading: " << d << std::endl;
 			if (delusesfixeddia < 0)
-				set -= GerbvDecoder(d,resolution_in_mm, minsize);
+				set -= GerbvDecoder(d,resolution_in_mm, minsize, circle_points);
 			else
-				set -= GerbvFixedDecoder(d,resolution_in_mm,delusesfixeddia);
+				set -= GerbvFixedDecoder(d,resolution_in_mm,delusesfixeddia, circle_points);
 		}
 	}
 	if (vm.count("x") && vm.count("y"))
