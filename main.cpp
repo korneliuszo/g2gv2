@@ -10,6 +10,7 @@
 #include "Fill.hpp"
 #include "PngRender.hpp"
 #include "GcodePrinter.hpp"
+#include "Optimize.hpp"
 #include "polygons.hpp"
 #include "boost/program_options.hpp"
 
@@ -109,6 +110,8 @@ int main(int argc, char **argv) {
 	{
 		std::cout << "Tracing path" << std::endl;
 		fill=Fill(set, pensize_scalar, resize_points);
+		std::cout << "Optimizing" << std::endl;
+		Optimize(fill);
 	}
 	if (vm.count("outfile"))
 	{

@@ -7,6 +7,7 @@ add_executable(g2gv2
 	PngRender.cpp
 	Fill.cpp
 	GcodePrinter.cpp
+	Optimize.cpp
 )
 set_property(TARGET g2gv2 PROPERTY CXX_STANDARD 17)
 target_include_directories (g2gv2 PRIVATE "include")
