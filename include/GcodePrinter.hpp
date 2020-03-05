@@ -12,7 +12,7 @@
 #include <string>
 #include <memory>
 
-void GcodePrinter(std::string outfile, std::list<std::vector<point>> pts, int resolution_in_mm, double zup, double zdown);
+void GcodePrinter(std::string outfile, std::list<std::vector<point>> pts, int resolution_in_mm, std::string zup, std::string zdown);
 
 
 

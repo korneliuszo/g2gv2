@@ -20,7 +20,8 @@ int main(int argc, char **argv) {
 	double dpi = 300;
 	double pensize = 0.18;
 	double delusesfixeddia = -1;
-	double zup=5, zdown=0;
+	std::string zup="";
+	std::string zdown="";
 	int circle_points=50;
 	int resize_points=5;
 
@@ -32,8 +33,8 @@ int main(int argc, char **argv) {
 			("resolution", po::value<scalar>(&resolution_in_mm), "resolution in mm")
 			("pensize,P", po::value<double>(&pensize), "pen size in mm")
 			("dpi", po::value<double>(&dpi), "png dpi")
-			("zup,z", po::value<double>(&zup), "upper position of pen in mm")
-			("zdown,Z", po::value<double>(&zdown), "lower position of pen in mm")
+			("zup,z", po::value<std::string>(&zup), "up command")
+			("zdown,Z", po::value<std::string>(&zdown), "down command")
 			("outfile,o", po::value<std::string>(), "out gcode")
 			("pngfile,p", po::value<std::string>(), "out png")
 			("delusesfixeddia,D", po::value<double>(&delusesfixeddia), "del uses fixed diameter")

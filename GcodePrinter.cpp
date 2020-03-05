@@ -33,7 +33,7 @@ struct pos {
 };
 
 void GcodePrinter(std::string outfile, std::list<std::vector<point>> pts,
-		int resolution_in_mm, double zup, double zdown) {
+		int resolution_in_mm, std::string zup, std::string zdown) {
 
 	if (!isPowerOfTen(resolution_in_mm)) {
 		std::cerr << "Resolution is not power of 10!" << std::endl;
@@ -44,10 +44,12 @@ void GcodePrinter(std::string outfile, std::list<std::vector<point>> pts,
 	file << "G21        ;metric values" << std::endl;
 	for (auto contour : pts) {
 		auto firstpt = contour.begin();
-		file << "G0 Z" << zup << std::endl;
+		if (!zup.empty())
+			file << zup << std::endl;
 		file << "G0 X" << pos(firstpt->x(),resolution_in_mm)
 				<< " Y" << pos(firstpt->y(),resolution_in_mm) << std::endl;
-		file << "G0 Z" << zdown << std::endl;
+		if (!zdown.empty())
+			file << zdown << std::endl;
 		for(auto pt=firstpt+1; pt != contour.end(); pt++)
 		{
 			file << "G1 X" << pos(pt->x(),resolution_in_mm)
