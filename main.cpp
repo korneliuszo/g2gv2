@@ -24,7 +24,7 @@ int main(int argc, char **argv) {
 	std::string zup="";
 	std::string zdown="";
 	int circle_points=50;
-	int resize_points=5;
+	int resize_points=10;
 
 	namespace po = boost::program_options;
 	po::options_description desc("Options");
