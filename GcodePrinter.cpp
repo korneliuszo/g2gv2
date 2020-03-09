@@ -46,14 +46,14 @@ void GcodePrinter(std::string outfile, std::list<std::vector<point>> pts,
 		auto firstpt = contour.begin();
 		if (!zup.empty())
 			file << zup << std::endl;
-		file << "G0 X" << pos(firstpt->x(),resolution_in_mm)
-				<< " Y" << pos(firstpt->y(),resolution_in_mm) << std::endl;
+		file << "G0X" << pos(firstpt->x(),resolution_in_mm)
+				<< "Y" << pos(firstpt->y(),resolution_in_mm) << std::endl;
 		if (!zdown.empty())
 			file << zdown << std::endl;
 		for(auto pt=firstpt+1; pt != contour.end(); pt++)
 		{
-			file << "G1 X" << pos(pt->x(),resolution_in_mm)
-					<< " Y" << pos(pt->y(),resolution_in_mm) << std::endl;
+			file << "G1X" << pos(pt->x(),resolution_in_mm)
+					<< "Y" << pos(pt->y(),resolution_in_mm) << std::endl;
 		}
 	}
 
