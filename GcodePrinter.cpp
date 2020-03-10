@@ -32,8 +32,26 @@ struct pos {
 	}
 };
 
+void insertfile(std::ofstream &file, std::string name)
+{
+	char ch;
+	std::ifstream fs;
+	fs.open(name);
+	if(!fs)
+	{
+		std::cerr<<"Error in opening file..!!" << std::endl;
+		exit(2);
+	}
+	while(fs.eof()==0)
+	{
+		fs>>ch;
+		file<<ch;
+	}
+}
+
 void GcodePrinter(std::string outfile, std::list<std::vector<point>> pts,
-		int resolution_in_mm, std::string zup, std::string zdown) {
+		int resolution_in_mm, std::string zup, std::string zdown,
+		std::string preamble, std::string postamble) {
 
 	if (!isPowerOfTen(resolution_in_mm)) {
 		std::cerr << "Resolution is not power of 10!" << std::endl;
@@ -41,6 +59,8 @@ void GcodePrinter(std::string outfile, std::list<std::vector<point>> pts,
 	}
 
 	std::ofstream file(outfile);
+	if (!preamble.empty())
+		insertfile(file,preamble);
 	file << "G21        ;metric values" << std::endl;
 	for (auto contour : pts) {
 		auto firstpt = contour.begin();
@@ -56,5 +76,6 @@ void GcodePrinter(std::string outfile, std::list<std::vector<point>> pts,
 					<< "Y" << pos(pt->y(),resolution_in_mm) << std::endl;
 		}
 	}
-
+	if (!postamble.empty())
+		insertfile(file,postamble);
 }

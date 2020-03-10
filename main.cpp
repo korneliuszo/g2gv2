@@ -23,6 +23,8 @@ int main(int argc, char **argv) {
 	double delusesfixeddia = -1;
 	std::string zup="";
 	std::string zdown="";
+	std::string preamble="";
+	std::string postamble="";
 	int circle_points=50;
 	int resize_points=10;
 
@@ -45,6 +47,8 @@ int main(int argc, char **argv) {
 			("xy0", "move gcode to 0")
 			("circlepoints,c", po::value<int>(&circle_points), "circle_points")
 			("resizepoints,C", po::value<int>(&resize_points), "resize_points")
+			("preamble,m", po::value<std::string>(&preamble), "preamble file")
+			("postamble,m", po::value<std::string>(&postamble), "postamble file")
 			("hackSize", "hack widths to be more than pensize");
 
 
@@ -116,7 +120,7 @@ int main(int argc, char **argv) {
 	if (vm.count("outfile"))
 	{
 		std::cout << "Saving gcode to " << vm["outfile"].as<std::string>() << std::endl;
-		GcodePrinter(vm["outfile"].as<std::string>(),fill,resolution_in_mm, zup, zdown);
+		GcodePrinter(vm["outfile"].as<std::string>(),fill,resolution_in_mm, zup, zdown, preamble, postamble);
 	}
 	if (vm.count("pngfile"))
 	{
