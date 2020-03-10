@@ -9,8 +9,9 @@
 #define POLYGONS_HPP_
 
 #include <boost/polygon/polygon.hpp>
+#include <cstdint>
 
-typedef int scalar;
+typedef int64_t scalar;
 typedef boost::polygon::point_data<scalar> point;
 typedef boost::polygon::polygon_set_data<scalar> polygon_set;
 typedef boost::polygon::polygon_with_holes_data<scalar> polygon_with_holes;
