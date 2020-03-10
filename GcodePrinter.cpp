@@ -42,11 +42,8 @@ void insertfile(std::ofstream &file, std::string name)
 		std::cerr<<"Error in opening file..!!" << std::endl;
 		exit(2);
 	}
-	while(fs.eof()==0)
-	{
-		fs>>ch;
-		file<<ch;
-	}
+	file<<fs.rdbuf();
+	fs.close();
 }
 
 void GcodePrinter(std::string outfile, std::list<std::vector<point>> pts,
@@ -60,7 +57,10 @@ void GcodePrinter(std::string outfile, std::list<std::vector<point>> pts,
 
 	std::ofstream file(outfile);
 	if (!preamble.empty())
+	{
 		insertfile(file,preamble);
+		file << std::endl;
+	}
 	file << "G21        ;metric values" << std::endl;
 	for (auto contour : pts) {
 		auto firstpt = contour.begin();

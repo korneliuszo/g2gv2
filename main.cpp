@@ -48,7 +48,7 @@ int main(int argc, char **argv) {
 			("circlepoints,c", po::value<int>(&circle_points), "circle_points")
 			("resizepoints,C", po::value<int>(&resize_points), "resize_points")
 			("preamble,m", po::value<std::string>(&preamble), "preamble file")
-			("postamble,m", po::value<std::string>(&postamble), "postamble file")
+			("postamble,M", po::value<std::string>(&postamble), "postamble file")
 			("hackSize", "hack widths to be more than pensize");
 
 
