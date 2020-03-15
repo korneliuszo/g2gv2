@@ -84,16 +84,16 @@ int main(int argc, char **argv) {
 				set -= GerbvFixedDecoder(d,resolution_in_mm,delusesfixeddia, circle_points);
 		}
 	}
-	if (vm.count("x") && vm.count("y"))
-	{
-		boost::polygon::transformation<scalar> tr(point(vm["x"].as<int>(),vm["y"].as<int>()));
-		boost::polygon::transform(set,tr);
-	}
 	if (vm.count("xy0"))
 	{
 		rectangle rect;
 		set.extents(rect);
 		boost::polygon::transformation<scalar> tr(boost::polygon::ll(rect));
+		boost::polygon::transform(set,tr);
+	}
+	if (vm.count("x") && vm.count("y"))
+	{
+		boost::polygon::transformation<scalar> tr(point(vm["x"].as<int>(),vm["y"].as<int>()));
 		boost::polygon::transform(set,tr);
 	}
 	if (vm.count("transform"))
