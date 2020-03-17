@@ -13,6 +13,7 @@
 #include "Optimize.hpp"
 #include "polygons.hpp"
 #include "boost/program_options.hpp"
+#include <fstream>
 
 using namespace boost::polygon::operators;
 
@@ -44,7 +45,8 @@ int main(int argc, char **argv) {
 			("transform,t", po::value<int>(), "boost polygon transform (SWAP_XY=4)")
 			("x,x", po::value<int>(), "transform X in resolution")
 			("y,y", po::value<int>(), "transform Y in resolution")
-			("xy0", "move gcode to 0")
+			("xy0", po::value<std::string>()->implicit_value(""), "move gcode to 0")
+			("xyr", po::value<std::string>(), "move gcode to reference")
 			("circlepoints,c", po::value<int>(&circle_points), "circle_points")
 			("resizepoints,C", po::value<int>(&resize_points), "resize_points")
 			("preamble,m", po::value<std::string>(&preamble), "preamble file")
@@ -89,6 +91,20 @@ int main(int argc, char **argv) {
 		rectangle rect;
 		set.extents(rect);
 		boost::polygon::transformation<scalar> tr(boost::polygon::ll(rect));
+		boost::polygon::transform(set,tr);
+		if (!vm["xy0"].as<std::string>().empty())
+		{
+			std::ofstream reference(vm["xy0"].as<std::string>());
+			reference << boost::polygon::ll(rect).x() << " " << boost::polygon::ll(rect).y();
+		}
+	}
+	if (vm.count("xyr"))
+	{
+		std::ifstream reference(vm["xyr"].as<std::string>());
+		scalar x,y;
+		reference >> x >> y;
+		point pt(x,y);
+		boost::polygon::transformation<scalar> tr(pt);
 		boost::polygon::transform(set,tr);
 	}
 	if (vm.count("x") && vm.count("y"))
