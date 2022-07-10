@@ -23,6 +23,7 @@ int main(int argc, char **argv) {
 	double pensize = 0.18;
 	float overlap = 0.5;
 	double delusesfixeddia = -1;
+	double outline_fanout = 0;
 	std::string zup="";
 	std::string zdown="";
 	std::string preamble="";
@@ -42,6 +43,8 @@ int main(int argc, char **argv) {
 			("zup,z", po::value<std::string>(&zup), "up command")
 			("zdown,Z", po::value<std::string>(&zdown), "down command")
 			("outfile,o", po::value<std::string>(), "out gcode")
+			("outlinefile", po::value<std::string>(), "out outline gcode")
+			("outlinefanout", po::value<double>(&outline_fanout), "outline fanout")
 			("pngfile,p", po::value<std::string>(), "out png")
 			("delusesfixeddia,D", po::value<double>(&delusesfixeddia), "del uses fixed diameter")
 			("transform,t", po::value<int>(), "boost polygon transform (SWAP_XY=4)")
@@ -122,10 +125,12 @@ int main(int argc, char **argv) {
 	}
 	std::cout << "Polygon set created" << std::endl;
 	std::list<std::vector<point>> outline;
-	if (vm.count("outfile") || vm.count("pngfile"))
+	if (vm.count("outlinefile") || vm.count("pngfile"))
 	{
 		std::cout << "Tracing contour" << std::endl;
-		outline=Contour(set);
+		polygon_set tm = set;
+		tm.resize(outline_fanout*resolution_in_mm, true, resize_points);
+		outline=Contour(tm);
 	}
 	std::list<std::vector<point>> fill;
 	if (vm.count("outfile"))
@@ -139,6 +144,11 @@ int main(int argc, char **argv) {
 	{
 		std::cout << "Saving gcode to " << vm["outfile"].as<std::string>() << std::endl;
 		GcodePrinter(vm["outfile"].as<std::string>(),fill,resolution_in_mm, zup, zdown, preamble, postamble);
+	}
+	if (vm.count("outlinefile"))
+	{
+		std::cout << "Saving gcode to " << vm["outfile"].as<std::string>() << std::endl;
+		GcodePrinter(vm["outlinefile"].as<std::string>(),outline,resolution_in_mm, zup, zdown, preamble, postamble);
 	}
 	if (vm.count("pngfile"))
 	{
