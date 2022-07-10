@@ -21,6 +21,7 @@ int main(int argc, char **argv) {
 	scalar resolution_in_mm = 1000;
 	double dpi = 300;
 	double pensize = 0.18;
+	float overlap = 0.5;
 	double delusesfixeddia = -1;
 	std::string zup="";
 	std::string zdown="";
@@ -36,6 +37,7 @@ int main(int argc, char **argv) {
 			("del,d", po::value<std::vector<std::string> >(), "del gerber")
 			("resolution", po::value<scalar>(&resolution_in_mm), "resolution in mm")
 			("pensize,P", po::value<double>(&pensize), "pen size in mm")
+			("overlap", po::value<float>(&overlap), "overlap - 0-no overlap, 1 - full overlap")
 			("dpi", po::value<double>(&dpi), "png dpi")
 			("zup,z", po::value<std::string>(&zup), "up command")
 			("zdown,Z", po::value<std::string>(&zdown), "down command")
@@ -129,7 +131,7 @@ int main(int argc, char **argv) {
 	if (vm.count("outfile"))
 	{
 		std::cout << "Tracing path" << std::endl;
-		fill=Fill(set, pensize_scalar, resize_points);
+		fill=Fill(set, pensize_scalar, resize_points, overlap);
 		std::cout << "Optimizing" << std::endl;
 		Optimize(fill);
 	}
