@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.3)
+cmake_minimum_required(VERSION 4.1.1)
 project (g2gv2)
 add_executable(g2gv2
 	main.cpp

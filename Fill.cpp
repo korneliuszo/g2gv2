@@ -9,14 +9,14 @@
 
 using namespace boost::polygon::operators;
 
-std::list<std::vector<point>> Fillone(polygon_with_holes in, int pensize, int resize_points, float overlap) {
+std::list<std::vector<point>> Fillone(const polygon_with_holes & in, int pensize, int resize_points, float overlap) {
 	std::list<std::vector<point>> ret;
 	std::vector<std::vector<point>> holes_path;
 	polygon_set p;
 	p += in;
+	std::deque<polygon_with_holes> polys;
 
 	while (true) {
-		std::vector<polygon_with_holes> polys;
 		polys.clear();
 		p.get(polys);
 		if (polys.size() == 0)
