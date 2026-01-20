@@ -70,8 +70,6 @@ void PngRender(std::string outfile,
 				drawline(image, *begin, *end, scalefactor, minx, miny, key);
 				begin = end;
 			}
-			drawline(image, *(poly.end() - 1), *(poly.begin()), scalefactor,
-					minx, miny, key);
 		}
 	}
 	image.write(outfile);

@@ -21,5 +21,4 @@ typedef boost::polygon::rectangle_data<scalar> rectangle;
 
 
 
-
 #endif /* POLYGONS_HPP_ */

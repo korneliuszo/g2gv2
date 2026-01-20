@@ -34,26 +34,29 @@ private:
 };
 
 void makePoly(polygon_set &pset, bool append, point center, scalar d, int vertices, double offset) {
+	if(d<=0) return;
 	polygon p;
-	std::vector<point> nodes;
+	//std::vector<point> nodes;
 
 	double angle_step;
 	angle_step = -2 * M_PI / vertices;
 	offset *= M_PI / 180.0; // Convert to radians.
 
-	nodes.reserve(vertices);
+	p.coords_.reserve(vertices+1);
 
 	for (int i = 0; i < vertices; i++) {
-		nodes.push_back(
-				point(int(d / 2 * cos(i * angle_step + offset)) + center.x(),
-						int(d / 2 * sin(i * angle_step + offset))
-								+ center.y()));
+		p.coords_.emplace_back(
+				point(
+					scalar((d / 2) * cos(i * angle_step + offset)) + center.x(),
+					scalar((d / 2) * sin(i * angle_step + offset)) + center.y())
+				);
 	}
-	boost::polygon::set_points(p, nodes.begin(), nodes.end());
+	p.coords_.emplace_back(p.coords_.front());
+
 	if(append)
-		pset += p;
+		pset.insert(p);
 	else
-	 	pset -= p;
+	 	pset.insert(p,true);
 }
 
 void makePoly(polygon_set & pset, bool append, point center, scalar d, int vertices, double offset,
@@ -73,21 +76,23 @@ void makePoly(polygon_set & pset, bool append, point center, scalar d, int verti
 void makeRect(polygon_set & pset, bool append, point center, scalar width, scalar height,
 		scalar hole_diameter, int circle_points) {
 
-	int x = center.x();
-	int y = center.y();
+	scalar x = center.x();
+	scalar y = center.y();
 
-	std::array<point,4> nodes = {
-		point(x - width / 2, y - height / 2),
-		point(x - width / 2, y + height / 2),
-		point(x + width / 2, y + height / 2),
-		point(x + width / 2, y - height / 2)
-	};
 	polygon p;
-	boost::polygon::set_points(p, nodes.begin(), nodes.end());
+
+	p.coords_.reserve(5);
+
+	p.coords_.emplace_back(point(x - width / 2, y - height / 2));
+	p.coords_.emplace_back(point(x - width / 2, y + height / 2));
+	p.coords_.emplace_back(point(x + width / 2, y + height / 2));
+	p.coords_.emplace_back(point(x + width / 2, y - height / 2));
+	p.coords_.emplace_back(p.coords_.front());
+
 	if(append)
-		pset += p;
+		pset.insert(p);
 	else
-	 	pset -= p;
+	 	pset.insert(p,true);
 
 	if (hole_diameter > 0) {
 		makePoly(pset, !append, center, hole_diameter, circle_points, 0);
@@ -96,24 +101,24 @@ void makeRect(polygon_set & pset, bool append, point center, scalar width, scala
 
 void makeRect(polygon_set & pset, bool append,point point1, point point2, scalar height) {
 	polygon p;
-	point angle = point1;
-	boost::polygon::deconvolve(angle, point2);
-	double scale = boost::polygon::euclidean_distance(point(0, 0), angle);
+	point angle = point2;
+	boost::polygon::deconvolve(angle, point1);
+	scalar scale = boost::polygon::euclidean_distance(point(0, 0), angle);
 	boost::polygon::scale_up(angle, height / 2);
 	boost::polygon::scale_down(angle, scale);
 
-	std::array<point,4> nodes = {
-		point(point1.x() - angle.y(), point1.y() + angle.x()),
-		point(point1.x() + angle.y(), point1.y() - angle.x()),
-		point(point2.x() + angle.y(), point2.y() - angle.x()),
-		point(point2.x() - angle.y(), point2.y() + angle.x())
-	};
+	p.coords_.reserve(5);
 
-	boost::polygon::set_points(p, nodes.begin(), nodes.end());
+	p.coords_.emplace_back(point(point1.x() - angle.y(), point1.y() + angle.x()));
+	p.coords_.emplace_back(point(point1.x() + angle.y(), point1.y() - angle.x()));
+	p.coords_.emplace_back(point(point2.x() + angle.y(), point2.y() - angle.x()));
+	p.coords_.emplace_back(point(point2.x() - angle.y(), point2.y() + angle.x()));
+	p.coords_.emplace_back(p.coords_.front());
+
 	if(append)
-		pset += p;
+		pset.insert(p);
 	else
-	 	pset -= p;
+	 	pset.insert(p,true);
 }
 
 void makeOval(polygon_set & pset, bool append, point center, scalar width, scalar height,
@@ -144,8 +149,8 @@ void makeOval(polygon_set & pset, bool append, point center, scalar width, scala
 void makeMoire(polygon_set & pset, bool append, point center, scalar odia, scalar thickness, scalar gap,
 		int max_rings, scalar cross_thickness, scalar cross_len, int circle_points) {
 	for (int i = 0; i < max_rings; i++) {
-		int external_diameter = odia - 2 * (thickness + gap) * i;
-		int internal_diameter = external_diameter - 2 * thickness;
+		scalar external_diameter = odia - 2 * (thickness + gap) * i;
+		scalar internal_diameter = external_diameter - 2 * thickness;
 		if (external_diameter <= 0)
 			break;
 		if (internal_diameter < 0)
@@ -197,6 +202,7 @@ polygon_set GerbvDecoder(std::string infile, scalar resolution_in_mm, scalar min
 			const gerbv_aperture_t *const aperture = apertures[i];
 			if (!aperture)
 				continue;
+			apertures_map[i] = polygon_set();
 			switch (aperture->type) {
 			case GERBV_APTYPE_NONE:
 				continue;
@@ -387,9 +393,9 @@ polygon_set GerbvDecoder(std::string infile, scalar resolution_in_mm, scalar min
 					rotate_transform<scalar> rotate(rotation * M_PI / 180);
 					boost::polygon::transform(part, rotate);
 					if (polarity == 0) {
-						compound -= part;
+						compound.insert(part,true);
 					} else {
-						compound += part;
+						compound.insert(part);
 					}
 					simplified_amacro = simplified_amacro->next;
 				};
@@ -403,13 +409,23 @@ polygon_set GerbvDecoder(std::string infile, scalar resolution_in_mm, scalar min
 		}
 	}
 
+	for(auto & a:apertures_map)
+	{
+		a.second.clean();
+	}
+
 	bool contour = false;
 	std::deque<point> contour_points;
+	polygon_set gsmall;
+	polygon_set trs;
+	polygon_set tre;
+	polygon_set p;
+
 	for (gerbv_net_t *currentNet = gerber->netlist; currentNet; currentNet =
 			currentNet->next) {
-		const point start(currentNet->start_x * gscale_to_um,
+		point start(currentNet->start_x * gscale_to_um,
 				currentNet->start_y * gscale_to_um);
-		const point stop(currentNet->stop_x * gscale_to_um,
+		point stop(currentNet->stop_x * gscale_to_um,
 				currentNet->stop_y * gscale_to_um);
 
 		if (currentNet->interpolation == GERBV_INTERPOLATION_PAREA_START) {
@@ -418,11 +434,12 @@ polygon_set GerbvDecoder(std::string infile, scalar resolution_in_mm, scalar min
 		}
 		if (currentNet->interpolation == GERBV_INTERPOLATION_PAREA_END) {
 			contour = false;
-			polygon p;
-			boost::polygon::set_points(p, contour_points.begin(),
-					contour_points.end());
+			p.clear();
+			p.insert(polygon(contour_points.begin(), contour_points.end()));
 			contour_points.clear();
-			graph += p;
+			p.resize(minsize/2, true, circle_points);
+			p.clean();
+			graph.insert(p);
 			continue;
 		}
 
@@ -437,21 +454,19 @@ polygon_set GerbvDecoder(std::string infile, scalar resolution_in_mm, scalar min
 						contour_points.push_back(start);
 					contour_points.push_back(stop);
 				} else {
-					polygon_set trs = apertures_map[currentNet->aperture];
-					polygon_set tre = apertures_map[currentNet->aperture];
-					boost::polygon::transformation<scalar> ts(start);
-					boost::polygon::transformation<scalar> te(stop);
-					boost::polygon::transform(trs, ts.invert());
-					boost::polygon::transform(tre, te.invert());
-					polygon_set gsmall;
-					gsmall += trs;
-					gsmall += tre;
+					gsmall.clear();
 					switch (gerber->aperture[currentNet->aperture]->type) {
 					case GERBV_APTYPE_CIRCLE:
 					{
-						scalar width=std::max(scalar(gerber->aperture[currentNet->aperture]->parameter[0]* gscale_to_um),
-								minsize);
-						makeRect(gsmall, true, start, stop, width);
+						trs = apertures_map[currentNet->aperture];
+						tre = apertures_map[currentNet->aperture];
+						boost::polygon::transformation<scalar> ts(start);
+						boost::polygon::transformation<scalar> te(stop);
+						boost::polygon::transform(trs, ts.invert());
+						boost::polygon::transform(tre, te.invert());
+						gsmall.insert(trs);
+						gsmall.insert(tre);
+						makeRect(gsmall, true, start, stop, scalar(gerber->aperture[currentNet->aperture]->parameter[0]* gscale_to_um));
 						break;
 					}
 					default:
@@ -460,7 +475,8 @@ polygon_set GerbvDecoder(std::string infile, scalar resolution_in_mm, scalar min
 								<< " not implemented in interpolation"
 								<< std::endl;
 					}
-					graph += gsmall;
+					gsmall.clean();
+					graph.insert(gsmall);
 				}
 				break;
 			}
@@ -484,21 +500,21 @@ polygon_set GerbvDecoder(std::string infile, scalar resolution_in_mm, scalar min
 					double currr = (stopr - startr)
 							* (i / (double) circle_points);
 					if (contour) {
-						point p(currr * cos(currangle), currr * sin(currangle));
-						boost::polygon::convolve(p, center);
-						contour_points.push_back(p);
+						point pt(currr * cos(currangle), currr * sin(currangle));
+						boost::polygon::convolve(pt, center);
+						contour_points.push_back(pt);
 					} else {
 						if (gerber->aperture[currentNet->aperture]->type
 								== GERBV_APTYPE_CIRCLE) {
-							point p(currr * cos(currangle),
+							point pt(currr * cos(currangle),
 									currr * sin(currangle));
-							boost::polygon::convolve(p, center);
+							boost::polygon::convolve(pt, center);
 							double r =
 									gerber->aperture[currentNet->aperture]->parameter[0]
 											/ 2 * gscale_to_um;
 							point c(r * cos(currangle), r * sin(currangle));
-							point pn(p);
-							point pf(p);
+							point pn(pt);
+							point pf(pt);
 							boost::polygon::convolve(pn, c);
 							boost::polygon::deconvolve(pf, c);
 							circ.push_front(pn);
@@ -511,19 +527,20 @@ polygon_set GerbvDecoder(std::string infile, scalar resolution_in_mm, scalar min
 					}
 				}
 				if (!contour) {
-					polygon_set trs = apertures_map[currentNet->aperture];
-					polygon_set tre = apertures_map[currentNet->aperture];
+					trs = apertures_map[currentNet->aperture];
+					tre = apertures_map[currentNet->aperture];
 					boost::polygon::transformation<scalar> ts(start);
 					boost::polygon::transformation<scalar> te(stop);
 					boost::polygon::transform(trs, ts.invert());
 					boost::polygon::transform(tre, te.invert());
-					polygon_set gsmall;
-					gsmall += trs;
-					gsmall += tre;
-					polygon p;
-					boost::polygon::set_points(p, circ.begin(), circ.end());
-					gsmall += p;
-					graph += gsmall;
+					gsmall.clear();
+					gsmall.insert(trs);
+					gsmall.insert(tre);
+					p.clear();
+					p.insert(polygon(circ.begin(), circ.end()));
+					gsmall.insert(p);
+					gsmall.clean();
+					graph.insert(gsmall);
 				}
 				break;
 			}
@@ -536,13 +553,14 @@ polygon_set GerbvDecoder(std::string infile, scalar resolution_in_mm, scalar min
 			polygon_set translated = apertures_map[currentNet->aperture];
 			boost::polygon::transformation<scalar> transform(stop);
 			boost::polygon::transform(translated, transform.invert());
-			graph += translated;
+			graph.insert(translated);
 			break;
 		}
 		}
 	}
 
 	gerbv_destroy_project(project);
+	graph.clean();
 	return graph;
 }
 

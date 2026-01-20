@@ -13,7 +13,7 @@
 #include <memory>
 
 
-void Optimize(std::list<std::vector<point>> &list);
+void Optimize(std::list<std::vector<point>> &list, scalar pensize);
 
 
 

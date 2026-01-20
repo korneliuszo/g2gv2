@@ -7,9 +7,9 @@
 
 #include "Optimize.hpp"
 
-void Optimize(std::list<std::vector<point>> &list)
+void Optimize(std::list<std::vector<point>> &list, scalar pensize)
 {
-	for(auto it=list.begin();it != --list.end(); it++)
+	for(auto it=list.begin();it != --list.end();)
 	{
 		auto minit = it;
 		minit++;
@@ -24,7 +24,14 @@ void Optimize(std::list<std::vector<point>> &list)
 			}
 		}
 		auto pos=it;
-		list.insert(++pos,*minit);
+		if(mindist < pensize*2+2)
+		{
+			it->insert(it->end(),minit->begin(),minit->end());
+		}
+		else {
+			list.insert(++pos,*minit);
+			it++;
+		}
 		list.erase(minit);
 	}
 }
