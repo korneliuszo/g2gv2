@@ -10,7 +10,7 @@
 #include <memory>
 #include "polygons.hpp"
 
-void PngRender(std::string outfile, std::map<int ,std::list<std::vector<point>>> pts, double dpi=300, int resolution_in_mm=1000);
+void PngRender(std::string outfile, std::map<int ,std::list<std::vector<point>>> pts, double dpi, scalar resolution_in_mm);
 
 
 

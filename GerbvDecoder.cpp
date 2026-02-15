@@ -26,8 +26,8 @@ public:
 	}
 	void transform(coordinate_type &x, coordinate_type &y) const {
 		coordinate_type tx = x;
-		x = x * c - y * s;
-		y = tx * s + y * c;
+		x = std::floor(x * c - y * s+0.5);
+		y = std::floor(tx * s + y * c+0.5);
 	}
 private:
 	double s, c;
@@ -36,22 +36,24 @@ private:
 void makePoly(polygon_set &pset, bool append, point center, scalar d, int vertices, double offset) {
 	if(d<=0) return;
 	polygon p;
-	//std::vector<point> nodes;
+	std::vector<point> nodes;
 
 	double angle_step;
 	angle_step = -2 * M_PI / vertices;
 	offset *= M_PI / 180.0; // Convert to radians.
 
-	p.coords_.reserve(vertices+1);
+	nodes.reserve(vertices+1);
 
 	for (int i = 0; i < vertices; i++) {
-		p.coords_.emplace_back(
+		nodes.push_back(
 				point(
 					scalar((d / 2) * cos(i * angle_step + offset)) + center.x(),
 					scalar((d / 2) * sin(i * angle_step + offset)) + center.y())
 				);
 	}
-	p.coords_.emplace_back(p.coords_.front());
+	nodes.push_back(nodes.front());
+
+	p.set(nodes.begin(),nodes.end());
 
 	if(append)
 		pset.insert(p);
@@ -80,14 +82,17 @@ void makeRect(polygon_set & pset, bool append, point center, scalar width, scala
 	scalar y = center.y();
 
 	polygon p;
+	std::vector<point> nodes;
 
-	p.coords_.reserve(5);
+	nodes.reserve(5);
 
-	p.coords_.emplace_back(point(x - width / 2, y - height / 2));
-	p.coords_.emplace_back(point(x - width / 2, y + height / 2));
-	p.coords_.emplace_back(point(x + width / 2, y + height / 2));
-	p.coords_.emplace_back(point(x + width / 2, y - height / 2));
-	p.coords_.emplace_back(p.coords_.front());
+	nodes.push_back(point(x - width / 2, y - height / 2));
+	nodes.push_back(point(x - width / 2, y + height / 2));
+	nodes.push_back(point(x + width / 2, y + height / 2));
+	nodes.push_back(point(x + width / 2, y - height / 2));
+	nodes.push_back(nodes.front());
+
+	p.set(nodes.begin(),nodes.end());
 
 	if(append)
 		pset.insert(p);
@@ -101,19 +106,22 @@ void makeRect(polygon_set & pset, bool append, point center, scalar width, scala
 
 void makeRect(polygon_set & pset, bool append,point point1, point point2, scalar height) {
 	polygon p;
-	point angle = point2;
+	boost::polygon::point_data<long double> angle = point2;
 	boost::polygon::deconvolve(angle, point1);
-	scalar scale = boost::polygon::euclidean_distance(point(0, 0), angle);
+	long double scale = boost::polygon::euclidean_distance(boost::polygon::point_data<long double>(0, 0), angle);
 	boost::polygon::scale_up(angle, height / 2);
 	boost::polygon::scale_down(angle, scale);
+	std::vector<point> nodes;
 
-	p.coords_.reserve(5);
+	nodes.reserve(5);
 
-	p.coords_.emplace_back(point(point1.x() - angle.y(), point1.y() + angle.x()));
-	p.coords_.emplace_back(point(point1.x() + angle.y(), point1.y() - angle.x()));
-	p.coords_.emplace_back(point(point2.x() + angle.y(), point2.y() - angle.x()));
-	p.coords_.emplace_back(point(point2.x() - angle.y(), point2.y() + angle.x()));
-	p.coords_.emplace_back(p.coords_.front());
+	nodes.push_back(point(point1.x() - angle.y(), point1.y() + angle.x()));
+	nodes.push_back(point(point1.x() + angle.y(), point1.y() - angle.x()));
+	nodes.push_back(point(point2.x() + angle.y(), point2.y() - angle.x()));
+	nodes.push_back(point(point2.x() - angle.y(), point2.y() + angle.x()));
+	nodes.push_back(nodes.front());
+
+	p.set(nodes.begin(),nodes.end());
 
 	if(append)
 		pset.insert(p);
@@ -273,9 +281,10 @@ polygon_set GerbvDecoder(std::string infile, scalar resolution_in_mm, scalar min
 						break;
 					case GERBV_APTYPE_MACRO_OUTLINE: {
 						std::vector<point> nodes;
+						unsigned int count = int(round(simplified_amacro->parameter[1]))+1;
 						polygon p;
 						for (unsigned int i = 0;
-								i < round(simplified_amacro->parameter[1]) + 1;
+								i < count;
 								i++) {
 							nodes.push_back(
 									point(
@@ -284,13 +293,10 @@ polygon_set GerbvDecoder(std::string infile, scalar resolution_in_mm, scalar min
 											simplified_amacro->parameter[i * 2
 													+ 3] * gscale_to_um));
 						}
-						boost::polygon::set_points(p, nodes.begin(),
-								nodes.end());
-						part = p;
+						p.set(nodes.begin(), nodes.end());
+						part.insert(p);
 						polarity = simplified_amacro->parameter[0];
-						rotation = simplified_amacro->parameter[(2
-								* int(round(simplified_amacro->parameter[1]))
-								+ 4)];
+						rotation = simplified_amacro->parameter[(2*count + 2)];
 						break;
 					}
 					case GERBV_APTYPE_MACRO_POLYGON:
@@ -550,10 +556,10 @@ polygon_set GerbvDecoder(std::string infile, scalar resolution_in_mm, scalar min
 			}
 			break;
 		case GERBV_APERTURE_STATE_FLASH: {
-			polygon_set translated = apertures_map[currentNet->aperture];
+			tre = apertures_map[currentNet->aperture];
 			boost::polygon::transformation<scalar> transform(stop);
-			boost::polygon::transform(translated, transform.invert());
-			graph.insert(translated);
+			tre.transform(transform.invert());
+			graph.insert(tre);
 			break;
 		}
 		}

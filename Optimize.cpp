@@ -24,7 +24,7 @@ void Optimize(std::list<std::vector<point>> &list, scalar pensize)
 			}
 		}
 		auto pos=it;
-		if(mindist < pensize*2+2)
+		if(mindist < pensize+2)
 		{
 			it->insert(it->end(),minit->begin(),minit->end());
 		}

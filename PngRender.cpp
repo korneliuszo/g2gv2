@@ -9,24 +9,32 @@
 #include <png++/png.hpp>
 
 void drawline(png::image<png::rgb_pixel> &image, point a, point b,
-		double scalefactor, scalar minx, scalar miny, int colour) {
+		long double scalefactor, scalar minx, scalar miny, int colour) {
 	png::rgb_pixel col((colour>>16)&0xff,(colour>>8)&0xff,(colour>>0)&0xff);
 	if (a== b) {
 		image[image.get_height()-1-int((a.y() - miny) * scalefactor)]
 			  [int((a.x() - minx) * scalefactor)] = col;
 		return;
 	}
-	double dx = (b.x() - a.x()) * scalefactor;
-	double dy = (b.y() - a.y()) * scalefactor;
-	double step;
+	long double dx = (b.x() - a.x()) * scalefactor;
+	long double dy = (b.y() - a.y()) * scalefactor;
+	long double step;
 	if (std::abs(dx) >= std::abs(dy))
 		step = std::abs(dx);
 	else
 		step = std::abs(dy);
+	if (step < scalefactor/2)
+	{
+		image[image.get_height()-1-int((a.y() - miny) * scalefactor)]
+			  [int((a.x() - minx) * scalefactor)] = col;
+		image[image.get_height()-1-int((b.y() - miny) * scalefactor)]
+			  [int((b.x() - minx) * scalefactor)] = col;
+		return;
+	}
 	dx = dx / step;
 	dy = dy / step;
-	double x = (a.x() - minx) * scalefactor;
-	double y = (a.y() - miny) * scalefactor;
+	long double x = (a.x() - minx) * scalefactor;
+	long double y = (a.y() - miny) * scalefactor;
 	int i = 1;
 	while (i <= step || i == 1) {
 		image[image.get_height()-1-int(y)][int(x)] = col;
@@ -38,12 +46,12 @@ void drawline(png::image<png::rgb_pixel> &image, point a, point b,
 
 void PngRender(std::string outfile,
 		std::map<int, std::list<std::vector<point>>> pts, double dpi,
-		int resolution_in_mm) {
+		scalar resolution_in_mm) {
 	scalar minx = 0;
 	scalar miny = 0;
 	scalar maxx = 0;
 	scalar maxy = 0;
-	double scalefactor = dpi / 25.4 / resolution_in_mm;
+	long double scalefactor = dpi / 25.4 / resolution_in_mm;
 	for (auto& [key, value] : pts) {
 		for (auto a : value) {
 			for (auto b : a) {
